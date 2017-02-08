@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial &#8212; alipy 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Notes" href="notes.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="notes.html" title="Notes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">alipy 2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Below is a highly commented demo script. Note that all the SExtractor and catalog identification stuff happens in <strong>one</strong> single line. The rest of this demo is a quick illustration of what can be done with the identifications in hand. See the API doc of these function and classes (search field on the left) for detailed information !</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alipy</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="n">images_to_align</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;images/*.fits&quot;</span><span class="p">))</span>
+<span class="n">ref_image</span> <span class="o">=</span> <span class="s2">&quot;ref.fits&quot;</span>
+
+<span class="n">identifications</span> <span class="o">=</span> <span class="n">alipy</span><span class="o">.</span><span class="n">ident</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">ref_image</span><span class="p">,</span> <span class="n">images_to_align</span><span class="p">,</span> <span class="n">visu</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># That&#39;s it !</span>
+<span class="c1"># Put visu=True to get visualizations in form of png files (nice but much slower)</span>
+<span class="c1"># On multi-extension data, you will want to specify the hdu (see API doc).</span>
+
+<span class="c1"># The output is a list of Identification objects, which contain the transforms :</span>
+<span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">identifications</span><span class="p">:</span> <span class="c1"># list of the same length as images_to_align.</span>
+        <span class="k">if</span> <span class="nb">id</span><span class="o">.</span><span class="n">ok</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span> <span class="c1"># i.e., if it worked</span>
+
+                <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">%20s</span><span class="s2"> : </span><span class="si">%20s</span><span class="s2">, flux ratio </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">ukn</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">id</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span> <span class="nb">id</span><span class="o">.</span><span class="n">medfluxratio</span><span class="p">)</span>
+                <span class="c1"># id.trans is a alipy.star.SimpleTransform object. Instead of printing it out as a string,</span>
+                <span class="c1"># you can directly access its parameters :</span>
+                <span class="c1">#print id.trans.v # the raw data, [r*cos(theta)  r*sin(theta)  r*shift_x  r*shift_y]</span>
+                <span class="c1">#print id.trans.matrixform()</span>
+                <span class="c1">#print id.trans.inverse() # this returns a new SimpleTransform object</span>
+
+        <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">%20s</span><span class="s2"> : no transformation found !&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">ukn</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="c1"># Minimal example of how to align images :</span>
+
+<span class="n">outputshape</span> <span class="o">=</span> <span class="n">alipy</span><span class="o">.</span><span class="n">align</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">ref_image</span><span class="p">)</span>
+<span class="c1"># This is simply a tuple (width, height)... you could specify any other shape.</span>
+
+<span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">identifications</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">id</span><span class="o">.</span><span class="n">ok</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                <span class="c1"># Variant 1, using only scipy and the simple affine transorm :</span>
+                <span class="n">alipy</span><span class="o">.</span><span class="n">align</span><span class="o">.</span><span class="n">affineremap</span><span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">ukn</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span> <span class="nb">id</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">outputshape</span><span class="p">,</span> <span class="n">makepng</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                <span class="c1"># Variant 2, using geomap/gregister, correcting also for distortions :</span>
+                <span class="n">alipy</span><span class="o">.</span><span class="n">align</span><span class="o">.</span><span class="n">irafalign</span><span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">ukn</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span> <span class="nb">id</span><span class="o">.</span><span class="n">uknmatchstars</span><span class="p">,</span> <span class="nb">id</span><span class="o">.</span><span class="n">refmatchstars</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">outputshape</span><span class="p">,</span> <span class="n">makepng</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="c1"># id.uknmatchstars and id.refmatchstars are simply lists of corresponding Star objects.</span>
+
+                <span class="c1"># By default, the aligned images are written into a directory &quot;alipy_out&quot;.</span>
+
+<span class="c1"># To be continued ...</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>The important functions and classes (links take you to the API documentation) :</dt>
+<dd><ul class="first last simple">
+<li><code class="xref py py-func docutils literal"><span class="pre">alipy.ident.run()</span></code> : the function that returns the <code class="xref py py-class docutils literal"><span class="pre">Identification</span></code> objects.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">alipy.ident.Identification</span></code> : the objects returned by the above <code class="xref py py-func docutils literal"><span class="pre">run()</span></code>. Note that these objects also contain lists of the matched stars.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">alipy.star.Star</span></code></li>
+<li><code class="xref py py-class docutils literal"><span class="pre">alipy.star.SimpleTransform</span></code></li>
+<li><code class="xref py py-func docutils literal"><span class="pre">alipy.align.affineremap()</span></code></li>
+<li><code class="xref py py-func docutils literal"><span class="pre">alipy.align.irafalign()</span></code></li>
+</ul>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="notes.html"
+                        title="next chapter">Notes</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tutorial.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="notes.html" title="Notes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">alipy 2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>
